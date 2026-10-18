@@ -1,0 +1,927 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/>
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <h1>💰 Money Diary</h1>
+    <p class="auth-subtitle">Your Money, Your Hisab!</p>
+    <div id="loadingBox" class="auth-message">ऐप शुरू हो रहा है…</div>
+    <div id="authFormArea" hidden>
+      <div class="auth-tabs">
+        <button type="button" id="showLogin" class="auth-tab active">Sign In</button>
+        <button type="button" id="showSignup" class="auth-tab">Sign Up</button>
+      </div>
+      <form id="authForm">
+        <label id="authNameLabel" hidden>आपका नाम</label>
+        <input id="authName" type="text" placeholder="आपका नाम" autocomplete="name" hidden>
+        <label>Email</label>
+        <input id="authEmail" type="email" placeholder="आपका ईमेल" autocomplete="email" required>
+        <label>Password</label>
+        <input id="authPassword" type="password" placeholder="कम से कम 6 अक्षर" minlength="6" autocomplete="current-password" required>
+        <button id="authSubmit" type="submit">Sign In</button>
+        <button id="forgotPassword" type="button" class="secondary">पासवर्ड भूल गए?</button>
+      </form>
+      <p id="authMessage" class="auth-message" role="status"></p>
+      <p class="auth-note">आपके खर्च आपके अकाउंट से जुड़े रहेंगे। अपना पासवर्ड किसी से साझा न करें।</p>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="mainApp" hidden>
+  <header class="header">
+    <h1>📒 Kharcha Book</h1>
+    <p>आपके हर खर्च का पूरा हिसाब</p><div class="account-bar"><span id="signedInEmail"></span><button type="button" id="logoutButton" class="secondary">Logout</button></div>
+  </header>
+
+  <div class="summary">
+    <div class="card">
+      <span>कुल खर्च</span>
+      <h2 id="total">₹0</h2>
+    </div>
+    <div class="card">
+      <span>आज का खर्च</span>
+      <h2 id="todayTotal">₹0</h2>
+    </div>
+    <div class="card">
+      <span>इस महीने</span>
+      <h2 id="monthTotal">₹0</h2>
+    </div>
+    <div class="card">
+      <span>इस साल</span>
+      <h2 id="yearTotal">₹0</h2>
+    </div>
+  </div>
+
+  <section class="box">
+    <h3 id="formHeading">➕ नया खर्च जोड़ें</h3>
+
+    <form id="expenseForm">
+      <label>खर्च का नाम</label>
+      <input id="name" type="text" placeholder="जैसे दूध, राशन" required>
+
+      <label>रकम (₹)</label>
+      <input id="amount" type="number" min="0.01" step="0.01" placeholder="रकम लिखें" required>
+
+      <label>तारीख</label>
+      <input id="date" type="date" required>
+
+      <label>समय</label>
+      <input id="time" type="time" required>
+
+      <label>कैटेगरी</label>
+      <select id="category">
+        <option>खाना</option>
+        <option>घर का सामान</option>
+        <option>यात्रा</option>
+        <option>बिल</option>
+        <option>शिक्षा</option>
+        <option>स्वास्थ्य</option>
+        <option>अन्य</option>
+      </select>
+
+      <label>नोट (वैकल्पिक)</label>
+      <input id="note" type="text" placeholder="कुछ लिखें">
+
+      <button type="submit" id="saveButton">खर्च सेव करें</button>
+      <button type="button" id="cancelButton" class="secondary" hidden>रद्द करें</button>
+    </form>
+  </section>
+
+  <section class="box">
+    <h3>🔎 खर्च खोजें</h3>
+    <input id="search" type="search" placeholder="खर्च का नाम खोजें">
+
+    <div class="filters">
+      <select id="filterMonth">
+        <option value="">सभी महीने</option>
+        <option value="01">जनवरी</option>
+        <option value="02">फ़रवरी</option>
+        <option value="03">मार्च</option>
+        <option value="04">अप्रैल</option>
+        <option value="05">मई</option>
+        <option value="06">जून</option>
+        <option value="07">जुलाई</option>
+        <option value="08">अगस्त</option>
+        <option value="09">सितंबर</option>
+        <option value="10">अक्टूबर</option>
+        <option value="11">नवंबर</option>
+        <option value="12">दिसंबर</option>
+      </select>
+
+      <select id="filterYear">
+        <option value="">सभी साल</option>
+      </select>
+    </div>
+
+    <button id="clearFilters" type="button" class="secondary">फ़िल्टर हटाएँ</button>
+  </section>
+
+  <section class="box">
+    <h3>📋 खर्चों की लिस्ट</h3>
+    <p id="storageStatus" class="status"></p>
+    <div id="expenseList">अभी कोई खर्च नहीं है।</div>
+    <button id="exportButton" type="button" class="secondary">रिपोर्ट डाउनलोड करें</button>
+  </section>
+</div><style>* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 15px;
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.app {
+  max-width: 700px;
+  margin: auto;
+}
+
+.header {
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  color: white;
+  padding: 25px 20px;
+  border-radius: 18px;
+  margin-bottom: 18px;
+}
+
+.header h1 {
+  margin: 0 0 8px;
+  font-size: 27px;
+}
+
+.header p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.card {
+  background: white;
+  padding: 17px 14px;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px #00000008;
+}
+
+.card span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.card h2 {
+  color: #0f766e;
+  font-size: 22px;
+  margin: 9px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.box {
+  background: white;
+  padding: 18px;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 12px #00000008;
+}
+
+.box h3 {
+  font-size: 19px;
+  margin: 0 0 16px;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 13px 0 6px;
+}
+
+input,
+select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 15px;
+  background: white;
+  color: #1e293b;
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 14px;
+  border: none;
+  border-radius: 10px;
+  background: #0f766e;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.expense-item {
+  padding: 14px;
+  margin: 12px 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.expense-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.expense-name {
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.expense-amount {
+  color: #0f766e;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.details {
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.item-actions button {
+  flex: 1;
+}
+
+.item-actions .delete {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status {
+  font-size: 13px;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  text-align: center;
+  color: #64748b;
+  padding: 20px 5px;
+}
+
+@media (max-width: 380px) {
+  body {
+    padding: 9px;
+  }
+
+  .box {
+    padding: 13px;
+  }
+
+  .card h2 {
+    font-size: 18px;
+  }
+}
+.auth-screen { min-height: 80vh; display:flex; align-items:center; justify-content:center; padding:16px 0; }
+.auth-card { width:100%; max-width:460px; margin:auto; background:#fff; border-radius:18px; padding:24px; box-shadow:0 8px 30px #00000010; }
+.auth-card h1 { text-align:center; color:#0f766e; margin:0 0 6px; }
+.auth-subtitle { text-align:center; color:#64748b; margin:0 0 18px; }
+.auth-tabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+.auth-tabs button { margin:0; }
+.auth-tabs .auth-tab { background:#e2e8f0; color:#334155; }
+.auth-tabs .auth-tab.active { background:#0f766e; color:#fff; }
+.auth-message { font-size:14px; line-height:1.5; color:#475569; overflow-wrap:anywhere; }
+.auth-note { color:#64748b; font-size:12px; line-height:1.5; }
+.account-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px; font-size:13px; }
+.account-bar button { width:auto; margin:0; padding:9px 12px; }
+[hidden] { display:none !important; }
+
+</style><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/*
+  IMPORTANT SETUP:
+  Replace every placeholder in firebaseConfig with values from Firebase Console
+  > Project settings (gear) > Your apps > Web app > SDK setup and configuration > Config.
+*/
+const firebaseConfig = {
+  apiKey: "AIzaSyAo2PkHTqHO4ZEwHrfzPjf8y1oHdbluHEg",
+authDomain: "money-diary-385f8.firebaseapp.com",
+databaseURL: "https://money-diary-385f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId: "money-diary-385f8",
+storageBucket: "money-diary-385f8.firebasestorage.app",
+messagingSenderId: "614681684176",
+appId: "1:614681684176:web:e1b27e4f4e6cc5e75d56d5",
+measurementId: "G-PG3TQ5RTQ7"
+};
+</script>
+<script>(function () {
+  "use strict";
+
+  var expenses = [];
+  var editingId = null;
+
+  var STORAGE_KEY = "kharcha_book_data_v2";
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function getToday() {
+    var d = new Date();
+    return d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0");
+  }
+
+  function getTime() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2, "0") + ":" +
+      String(d.getMinutes()).padStart(2, "0");
+  }
+
+  function money(value) {
+    return "₹" + Number(value || 0).toLocaleString("en-IN", {
+      maximumFractionDigits: 2
+    });
+  }
+
+  function escapeHTML(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  var currentUser = null;
+  var cloudRef = null;
+  var cloudWriteInProgress = false;
+  var authMode = "login";
+  var firebaseReady = false;
+
+  function setAuthMessage(message, isError) {
+    var el = $("authMessage");
+    if (!el) return;
+    el.textContent = message || "";
+    el.style.color = isError ? "#b91c1c" : "#0f766e";
+  }
+
+  function configIsReady() {
+    return firebaseConfig.apiKey !== "PASTE_API_KEY_HERE" &&
+      firebaseConfig.projectId !== "PASTE_PROJECT_ID_HERE" &&
+      firebaseConfig.databaseURL !== "PASTE_REALTIME_DATABASE_URL_HERE" &&
+      firebaseConfig.appId !== "PASTE_APP_ID_HERE";
+  }
+
+  function saveLocalData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+      $("storageStatus").textContent = currentUser
+        ? "☁️ लॉगिन है — डेटा इस फोन और Cloud पर सेव होगा।"
+        : "📱 डेटा इस डिवाइस पर सेव है।";
+      return true;
+    } catch (e) {
+      $("storageStatus").textContent = "⚠️ इस डिवाइस पर डेटा सेव नहीं हो पाया। रिपोर्ट डाउनलोड करें।";
+      return false;
+    }
+  }
+
+  function saveData() {
+    var ok = saveLocalData();
+    if (currentUser && cloudRef && !cloudWriteInProgress) {
+      cloudWriteInProgress = true;
+      cloudRef.set(expenses).then(function () {
+        $("storageStatus").textContent = "✅ डेटा इस डिवाइस और Cloud दोनों पर सेव है।";
+      }).catch(function (err) {
+        $("storageStatus").textContent = "⚠️ Cloud सेव नहीं हुआ: " + (err.message || "कनेक्शन जाँचें");
+      }).finally(function () {
+        cloudWriteInProgress = false;
+      });
+    }
+    return ok;
+  }
+
+  function loadLocalData() {
+    try {
+      var data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        var parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) expenses = parsed;
+      }
+    } catch (e) {
+      expenses = [];
+    }
+  }
+
+  function loadData() {
+    loadLocalData();
+    $("storageStatus").textContent = "📱 डिवाइस का डेटा लोड हुआ।";
+  }
+
+  function showAuthScreen() {
+    $("authScreen").hidden = false;
+    $("mainApp").hidden = true;
+    $("loadingBox").hidden = true;
+    $("authFormArea").hidden = false;
+  }
+
+  function showMainApp(user) {
+    currentUser = user;
+    $("authScreen").hidden = true;
+    $("mainApp").hidden = false;
+    $("signedInEmail").textContent = user.email || "लॉगिन है";
+  }
+
+  function setAuthMode(mode) {
+    authMode = mode;
+    var signup = mode === "signup";
+    $("authName").hidden = !signup;
+    $("authNameLabel").hidden = !signup;
+    $("authName").required = signup;
+    $("authPassword").autocomplete = signup ? "new-password" : "current-password";
+    $("authSubmit").textContent = signup ? "Create Account" : "Sign In";
+    $("showLogin").classList.toggle("active", !signup);
+    $("showSignup").classList.toggle("active", signup);
+    $("forgotPassword").hidden = signup;
+    setAuthMessage("");
+  }
+
+  $("showLogin").addEventListener("click", function () { setAuthMode("login"); });
+  $("showSignup").addEventListener("click", function () { setAuthMode("signup"); });
+
+  $("authForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+    if (!firebaseReady) {
+      setAuthMessage("Firebase सेटअप अभी पूरा नहीं है। HTML में firebaseConfig की placeholder values भरनी होंगी।", true);
+      return;
+    }
+    var email = $("authEmail").value.trim();
+    var password = $("authPassword").value;
+    $("authSubmit").disabled = true;
+    setAuthMessage("कृपया इंतज़ार करें…");
+    var task;
+    if (authMode === "signup") {
+      task = firebase.auth().createUserWithEmailAndPassword(email, password).then(function (credential) {
+        var name = $("authName").value.trim();
+        if (name) return credential.user.updateProfile({displayName: name});
+      });
+    } else {
+      task = firebase.auth().signInWithEmailAndPassword(email, password);
+    }
+    task.catch(function (err) {
+      var messages = {
+        "auth/email-already-in-use": "यह ईमेल पहले से रजिस्टर है। Sign In करें।",
+        "auth/invalid-email": "ईमेल सही नहीं है।",
+        "auth/weak-password": "पासवर्ड कम से कम 6 अक्षर का रखें।",
+        "auth/user-not-found": "इस ईमेल का अकाउंट नहीं मिला। पहले Sign Up करें।",
+        "auth/wrong-password": "पासवर्ड गलत है।",
+        "auth/invalid-credential": "ईमेल या पासवर्ड सही नहीं है।",
+        "auth/network-request-failed": "इंटरनेट कनेक्शन जाँचें।"
+      };
+      setAuthMessage(messages[err.code] || ("समस्या: " + (err.message || "फिर कोशिश करें")), true);
+    }).finally(function () {
+      $("authSubmit").disabled = false;
+    });
+  });
+
+  $("forgotPassword").addEventListener("click", function () {
+    if (!firebaseReady) {
+      setAuthMessage("पहले Firebase Configuration भरना जरूरी है।", true);
+      return;
+    }
+    var email = $("authEmail").value.trim();
+    if (!email) {
+      setAuthMessage("पहले Email बॉक्स में अपना ईमेल लिखें।", true);
+      return;
+    }
+    firebase.auth().sendPasswordResetEmail(email).then(function () {
+      setAuthMessage("पासवर्ड रीसेट करने का ईमेल भेज दिया गया है। Inbox/Spam जाँचें।");
+    }).catch(function (err) {
+      setAuthMessage(err.message || "रीसेट ईमेल नहीं भेजा जा सका।", true);
+    });
+  });
+
+  $("logoutButton").addEventListener("click", function () {
+    if (firebaseReady) firebase.auth().signOut();
+  });
+
+  function startCloudForUser(user) {
+    showMainApp(user);
+    loadLocalData();
+    cloudRef = firebase.database().ref("users/" + user.uid + "/expenses");
+    $("storageStatus").textContent = "☁️ Cloud डेटा जाँचा जा रहा है…";
+    cloudRef.once("value").then(function (snapshot) {
+      var cloudData = snapshot.val();
+      if (Array.isArray(cloudData)) {
+        // Merge local and cloud entries by id to preserve entries already on this phone.
+        var byId = {};
+        cloudData.concat(expenses).forEach(function (item) {
+          if (item && item.id != null) byId[String(item.id)] = item;
+        });
+        expenses = Object.keys(byId).map(function (key) { return byId[key]; });
+      } else if (cloudData && typeof cloudData === "object") {
+        var cloudItems = Object.keys(cloudData).map(function (key) { return cloudData[key]; }).filter(Boolean);
+        var merged = {};
+        cloudItems.concat(expenses).forEach(function (item) {
+          if (item && item.id != null) merged[String(item.id)] = item;
+        });
+        expenses = Object.keys(merged).map(function (key) { return merged[key]; });
+      }
+      saveLocalData();
+      return cloudRef.set(expenses);
+    }).then(function () {
+      $("storageStatus").textContent = "✅ Cloud Backup चालू है।";
+      refresh();
+    }).catch(function (err) {
+      $("storageStatus").textContent = "⚠️ Cloud कनेक्शन नहीं हुआ। Firebase Rules और URL जाँचें।";
+      console.error(err);
+    });
+
+    cloudRef.on("value", function (snapshot) {
+      if (cloudWriteInProgress) return;
+      var data = snapshot.val();
+      if (!data) return;
+      var items = Array.isArray(data) ? data : Object.keys(data).map(function (key) { return data[key]; });
+      if (Array.isArray(items)) {
+        expenses = items.filter(Boolean);
+        saveLocalData();
+        refresh();
+      }
+    });
+  }
+
+  function initializeFirebase() {
+    if (!configIsReady()) {
+      $("loadingBox").textContent = "Firebase जोड़ना बाकी है। नीचे Sign In/Sign Up स्क्रीन दिखेगी, लेकिन पहले HTML में Firebase Configuration भरना होगा।";
+      showAuthScreen();
+      setAuthMessage("Firebase Console से सही firebaseConfig और Database URL डालने के बाद ही Login/Cloud Backup चलेगा।", true);
+      return;
+    }
+    try {
+      firebase.initializeApp(firebaseConfig);
+      firebaseReady = true;
+      firebase.auth().onAuthStateChanged(function (user) {
+        if (cloudRef) {
+          cloudRef.off();
+          cloudRef = null;
+        }
+        if (user) {
+          startCloudForUser(user);
+        } else {
+          currentUser = null;
+          loadLocalData();
+          refresh();
+          showAuthScreen();
+          setAuthMode("login");
+        }
+      });
+    } catch (e) {
+      $("loadingBox").textContent = "Firebase शुरू नहीं हो पाया। Configuration जाँचें।";
+      showAuthScreen();
+      setAuthMessage(e.message || "Firebase सेटअप में समस्या है।", true);
+    }
+  }
+
+  function updateSummary() {
+    var today = getToday();
+    var month = today.slice(0, 7);
+    var year = today.slice(0, 4);
+
+    var total = 0;
+    var todayTotal = 0;
+    var monthTotal = 0;
+    var yearTotal = 0;
+
+    expenses.forEach(function (item) {
+      var amount = Number(item.amount) || 0;
+
+      total += amount;
+
+      if (item.date === today) {
+        todayTotal += amount;
+      }
+
+      if (String(item.date).slice(0, 7) === month) {
+        monthTotal += amount;
+      }
+
+      if (String(item.date).slice(0, 4) === year) {
+        yearTotal += amount;
+      }
+    });
+
+    $("total").textContent = money(total);
+    $("todayTotal").textContent = money(todayTotal);
+    $("monthTotal").textContent = money(monthTotal);
+    $("yearTotal").textContent = money(yearTotal);
+  }
+
+  function updateYears() {
+    var select = $("filterYear");
+    var previous = select.value;
+
+    var years = [];
+
+    expenses.forEach(function (item) {
+      var year = String(item.date || "").slice(0, 4);
+      if (year && years.indexOf(year) === -1) {
+        years.push(year);
+      }
+    });
+
+    years.sort().reverse();
+    select.innerHTML = '<option value="">सभी साल</option>';
+
+    years.forEach(function (year) {
+      var option = document.createElement("option");
+      option.value = year;
+      option.textContent = year;
+      select.appendChild(option);
+    });
+
+    select.value = years.indexOf(previous) !== -1 ? previous : "";
+  }
+
+  function getFiltered() {
+    var search = $("search").value.trim().toLowerCase();
+    var month = $("filterMonth").value;
+    var year = $("filterYear").value;
+
+    return expenses.filter(function (item) {
+      var text = [
+        item.name,
+        item.note,
+        item.category
+      ].join(" ").toLowerCase();
+
+      if (search && text.indexOf(search) === -1) {
+        return false;
+      }
+
+      if (month && String(item.date).slice(5, 7) !== month) {
+        return false;
+      }
+
+      if (year && String(item.date).slice(0, 4) !== year) {
+        return false;
+      }
+
+      return true;
+    }).sort(function (a, b) {
+      return (String(b.date) + String(b.time))
+        .localeCompare(String(a.date) + String(a.time));
+    });
+  }
+
+  function renderList() {
+    var list = $("expenseList");
+    var items = getFiltered();
+
+    if (!items.length) {
+      list.innerHTML =
+        '<div class="empty">अभी कोई खर्च नहीं मिला।</div>';
+      return;
+    }
+
+    list.innerHTML = items.map(function (item) {
+      return '<div class="expense-item">' +
+        '<div class="expense-top">' +
+          '<div class="expense-name">' +
+            escapeHTML(item.name) +
+          '</div>' +
+          '<div class="expense-amount">' +
+            money(item.amount) +
+          '</div>' +
+        '</div>' +
+        '<div class="details">' +
+          '📅 ' + escapeHTML(item.date) +
+          ' &nbsp; 🕒 ' + escapeHTML(item.time) + '<br>' +
+          '🏷️ ' + escapeHTML(item.category) +
+          (item.note ? '<br>📝 ' + escapeHTML(item.note) : '') +
+        '</div>' +
+        '<div class="item-actions">' +
+          '<button type="button" data-action="edit" data-id="' +
+            escapeHTML(item.id) + '">✏️ एडिट</button>' +
+          '<button type="button" class="delete" data-action="delete" data-id="' +
+            escapeHTML(item.id) + '">🗑️ डिलीट</button>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+  }
+
+  function refresh() {
+    updateSummary();
+    updateYears();
+    renderList();
+  }
+
+  function resetForm() {
+    $("expenseForm").reset();
+    $("date").value = getToday();
+    $("time").value = getTime();
+
+    editingId = null;
+    $("formHeading").textContent = "➕ नया खर्च जोड़ें";
+    $("saveButton").textContent = "खर्च सेव करें";
+    $("cancelButton").hidden = true;
+  }
+
+  $("expenseForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    var name = $("name").value.trim();
+    var amount = Number($("amount").value);
+    var date = $("date").value;
+    var time = $("time").value;
+    var category = $("category").value;
+    var note = $("note").value.trim();
+
+    if (!name || !date || !time ||
+        !Number.isFinite(amount) || amount <= 0) {
+      alert("कृपया खर्च का नाम, सही रकम, तारीख और समय भरें।");
+      return;
+    }
+
+    if (editingId !== null) {
+      var index = expenses.findIndex(function (item) {
+        return item.id === editingId;
+      });
+
+      if (index !== -1) {
+        expenses[index] = {
+          id: editingId,
+          name: name,
+          amount: amount,
+          date: date,
+          time: time,
+          category: category,
+          note: note
+        };
+      }
+    } else {
+      expenses.push({
+        id: String(Date.now()) + "_" +
+          Math.random().toString(36).slice(2),
+        name: name,
+        amount: amount,
+        date: date,
+        time: time,
+        category: category,
+        note: note
+      });
+    }
+
+    saveData();
+    resetForm();
+    refresh();
+
+    alert("✅ खर्च जोड़ दिया गया!");
+  });
+
+  $("cancelButton").addEventListener("click", resetForm);
+
+  $("expenseList").addEventListener("click", function (event) {
+    var button = event.target.closest("button[data-action]");
+    if (!button) return;
+
+    var id = button.getAttribute("data-id");
+    var action = button.getAttribute("data-action");
+
+    var item = expenses.find(function (expense) {
+      return expense.id === id;
+    });
+
+    if (!item) return;
+
+    if (action === "edit") {
+      editingId = id;
+
+      $("name").value = item.name;
+      $("amount").value = item.amount;
+      $("date").value = item.date;
+      $("time").value = item.time;
+      $("category").value = item.category;
+      $("note").value = item.note || "";
+
+      $("formHeading").textContent = "✏️ खर्च एडिट करें";
+      $("saveButton").textContent = "बदलाव सेव करें";
+      $("cancelButton").hidden = false;
+
+      $("formHeading").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+
+    if (action === "delete") {
+      if (confirm("क्या आप यह खर्च डिलीट करना चाहते हैं?")) {
+        expenses = expenses.filter(function (expense) {
+          return expense.id !== id;
+        });
+
+        if (editingId === id) {
+          resetForm();
+        }
+
+        saveData();
+        refresh();
+      }
+    }
+  });
+
+  $("search").addEventListener("input", renderList);
+  $("filterMonth").addEventListener("change", renderList);
+  $("filterYear").addEventListener("change", renderList);
+
+  $("clearFilters").addEventListener("click", function () {
+    $("search").value = "";
+    $("filterMonth").value = "";
+    $("filterYear").value = "";
+    renderList();
+  });
+
+  $("exportButton").addEventListener("click", function () {
+    if (!expenses.length) {
+      alert("पहले कोई खर्च जोड़ें।");
+      return;
+    }
+
+    var rows = [
+      ["खर्च का नाम", "रकम", "तारीख", "समय", "कैटेगरी", "नोट"]
+    ];
+
+    expenses.forEach(function (item) {
+      rows.push([
+        item.name,
+        item.amount,
+        item.date,
+        item.time,
+        item.category,
+        item.note || ""
+      ]);
+    });
+
+    function csvCell(value) {
+      return '"' + String(value == null ? "" : value)
+        .replace(/"/g, '""') + '"';
+    }
+
+    var csv = "\uFEFF" + rows.map(function (row) {
+      return row.map(csvCell).join(",");
+    }).join("\r\n");
+
+    var blob = new Blob([csv], {
+      type: "text/csv;charset=utf-8;"
+    });
+
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+
+    link.href = url;
+    link.download = "Kharcha_Book_Report.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+    }, 1000);
+  });
+
+  loadData();
+  resetForm();
+  refresh();
+  initializeFirebase();
+})();</script>
